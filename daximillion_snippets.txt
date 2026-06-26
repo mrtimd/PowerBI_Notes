@@ -1,0 +1,93 @@
+# DAX Training Snippets (Copy/Paste Ready)
+
+-- HASONEVALUE
+Is Single Category :=
+IF(
+    HASONEVALUE(Data[Category]),
+    "One Category",
+    "Multiple Categories"
+)
+
+-- SELECTEDVALUE
+Selected Category :=
+SELECTEDVALUE(Data[Category], "Multiple or None")
+
+-- SELECTEDVALUE Label
+Category Label :=
+"Category: " & SELECTEDVALUE(Data[Category], "All Categories")
+
+-- Conditional Logic with SELECTEDVALUE
+Adjusted Value :=
+IF(
+    SELECTEDVALUE(Data[Category]) = "A",
+    SUM(Data[Value]) * 2,
+    SUM(Data[Value])
+)
+
+-- Debug Measure
+Debug Category :=
+SELECTEDVALUE(Data[Category], "Multiple")
+
+-- ISINSCOPE Detection
+Scope Level :=
+SWITCH(
+    TRUE(),
+    ISINSCOPE(Data[Subcategory]), "Subcategory Level",
+    ISINSCOPE(Data[Category]), "Category Level",
+    "Total Level"
+)
+
+-- ISINSCOPE Conditional Display
+Show Only Detail :=
+IF(
+    ISINSCOPE(Data[Subcategory]),
+    SUM(Data[Value])
+)
+
+-- Fixed Total with SUMX
+Adjusted Value Fixed :=
+IF(
+    ISINSCOPE(Data[Category]),
+    IF(
+        SELECTEDVALUE(Data[Category]) = "A",
+        SUM(Data[Value]) * 2,
+        SUM(Data[Value])
+    ),
+    SUMX(
+        VALUES(Data[Category]),
+        IF(
+            Data[Category] = "A",
+            CALCULATE(SUM(Data[Value])) * 2,
+            CALCULATE(SUM(Data[Value]))
+        )
+    )
+)
+
+-- Basic SUMX Example
+Double Total :=
+SUMX(Data, Data[Value] * 2)
+
+-- SUMX over Group (Best Practice)
+Category Iteration :=
+SUMX(
+    VALUES(Data[Category]),
+    CALCULATE(SUM(Data[Value]))
+)
+
+-- TREATAS Example
+Sales by Ship Date :=
+CALCULATE(
+    SUM(Data[Value]),
+    REMOVEFILTERS(Data[OrderDate]),
+    TREATAS(
+        VALUES(Data[OrderDate]),
+        Data[ShipDate]
+    )
+)
+
+-- USERELATIONSHIP Example (for modeled tables)
+Sales by Ship Date (Model) :=
+CALCULATE(
+    SUM(Sales[Amount]),
+    USERELATIONSHIP(Sales[ShipDate], Date[Date])
+)
